@@ -1,15 +1,28 @@
+# require "#{Dir.pwd}/one_nine_game"
+
+##################################
+# Test failure
+# SEED = BASE.permutation(9).to_a;1
+# SEED -= [BASE];1
+# object = OneNine.new
+# SEED.each_with_index {|game, i| object.state = 0; object.game = game; object.solve(1000); puts i if i % 1000 == 0};1
+# object.failures.size
+# failures = object.failures;1
+# failures -= [BASE];1
+# object = OneNine.new
+# failures.each_with_index {|game, i| object.state = 0; object.game = game; object.solve(1000); puts i if i % 1000 == 0};1
+##################################
+
 BASE = (1..9).to_a
-SEED = BASE.map do |num|
-  others = BASE - [num]
-end
 
 class OneNine
-  attr_accessor :game
+  attr_accessor :game, :failures, :state
 
   def initialize
     @game = BASE.shuffle
     @value = 0
     @state = 0
+    @failures = []
     puts @game.inspect
     puts "請輸入要交換哪兩個位置的數字，指令為 obj.change x, y"
   end
@@ -26,11 +39,13 @@ class OneNine
     else
       y = @game.index(@value) + 1
       temp_x = @game[x-1]
+      temp_y = @value
       @game[x-1] = @value
       @game[y-1] = temp_x
     end
 
-    @value = sum(x, y)
+    @value = sum(temp_x, temp_y)
+    # puts "y = #{@value}"
     @game
   end
 
@@ -56,13 +71,18 @@ class OneNine
     return @state
   end
 
-  def solve
+  def solve(limit = 1_000_000)
+    count = 0
+
     until @state == 1
+      count += 1
+      game = @game
+
       if @value == 0
         num1, num2 = BASE.sample 2
         x = @game.index(num1) + 1
         y = @game.index(num2) + 1
-        puts "change #{x}, #{y}"
+        # puts "change #{x}, #{y}"
         change x, y
       else
         others = []
@@ -74,12 +94,19 @@ class OneNine
           num1 = others.sample
         end
         x = @game.index(num1) + 1
-        puts "change #{x}"
+        # puts "change #{x}"
         change x
       end
 
-      puts @game.inspect
+      # puts @game.inspect
       check_state
+
+      if count > limit
+        @failures << game
+        @state = 1
+      end
     end
+
+    # puts count
   end
 end
