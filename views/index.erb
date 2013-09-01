@@ -5,13 +5,14 @@
     <meta charset="utf-8">
     <meta name="robots" content="INDEX,FOLLOW">
     <meta name="description" content="Card Game One-Nine Web version in Beta">
+
     <script type="text/javascript" charset="utf-8">
 
     </script>
   </head>
   <body>
     <div id="game">
-      <% (1..9).each do |num| %>
+      <% @question.game.each do |num| %>
         <input type="radio"><%= num %></input>
       <% end %>
     </div>
