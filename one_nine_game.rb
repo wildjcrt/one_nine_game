@@ -16,41 +16,52 @@
 BASE = (1..9).to_a
 
 class OneNine
-  attr_accessor :game, :failures, :state, :value
+  attr_accessor :game, :failures, :state, :value, :count
 
   def initialize
     @game = BASE.shuffle
     @value = 0
     @state = 0
+    @count = 0
     @failures = []
     puts @game.inspect
-    puts "請輸入要交換哪兩個位置的數字，指令為 obj.change x, y"
+    puts "請輸入要交換哪兩個數字，指令為 game.c x, y"
   end
 
   alias_method :g, :game
-  alias_method :v, :value
+  alias_method :y, :value
 
   def change(x, y = 0)
-    return puts "位置只能是 1 ~ 9" if x < 1 or x > 10
-    return puts "只能輸入一個位置，另一個位置已是 \"#{@game.index(@value)+1}\"" if @value != 0 && y != 0
-    return puts "上一回合已經是 \"#{@value}\"" if @game[x-1] == @value
+    return puts "數字只能是 1 ~ 9" if x < 1 or x > 10
+    return puts "只能輸入一個數字，另一個數字已是 \"#{@value}\"" if @value != 0 && y != 0
+    return puts "上一回合已經是 \"#{@value}\"" if x == @value
+
+    @count += 1
 
     if @value == 0
-      temp_x = @game[x-1]
-      temp_y = @game[y-1]
-      @game[x-1] = temp_y
-      @game[y-1] = temp_x
+      pos_x = @game.index x
+      pos_y = @game.index y
+      @game[pos_x] = y
+      @game[pos_y] = x
     else
-      y = @game.index(@value) + 1
-      temp_x = @game[x-1]
-      temp_y = @value
-      @game[x-1] = @value
-      @game[y-1] = temp_x
+      y = @value
+      pos_x = @game.index x
+      pos_y = @game.index y
+      @game[pos_x] = y
+      @game[pos_y] = x
     end
 
-    @value = sum(temp_x, temp_y)
-    puts "y = #{@value}"
-    @game
+    @value = sum(x, y)
+
+    if @game == BASE
+      puts "恭喜破關！您總共換了 #{@count} 次。"
+      @count = 0
+      @game = BASE.shuffle
+      puts "新題目： #{@game.inspect}"
+    else
+      puts "y = #{@value}"
+      @game
+    end
   end
   alias_method :c, :change
 
@@ -77,28 +88,23 @@ class OneNine
   end
 
   def solve(limit = 1_000_000)
-    count = 0
+    @count = 0
 
     until @state == 1
-      count += 1
+      @count += 1
       game = @game
 
       if @value == 0
-        num1, num2 = BASE.sample 2
-        x = @game.index(num1) + 1
-        y = @game.index(num2) + 1
+        x, y = BASE.sample 2
         # puts "change #{x}, #{y}"
         change x, y
       else
         others = []
         BASE.each do |num|
+          next if num == @value
           others << num unless @game[num-1] == num
         end
-        num1 = others.sample
-        while @value == num1
-          num1 = others.sample
-        end
-        x = @game.index(num1) + 1
+        x = others.sample
         # puts "change #{x}"
         change x
       end
@@ -106,7 +112,7 @@ class OneNine
       # puts @game.inspect
       check_state
 
-      if count > limit
+      if @count > limit
         @failures << game
         @state = 1
       end
