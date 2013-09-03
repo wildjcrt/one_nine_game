@@ -16,7 +16,7 @@
 BASE = (1..9).to_a
 
 class OneNine
-  attr_accessor :game, :failures, :state
+  attr_accessor :game, :failures, :state, :value
 
   def initialize
     @game = BASE.shuffle
@@ -27,7 +27,11 @@ class OneNine
     puts "請輸入要交換哪兩個位置的數字，指令為 obj.change x, y"
   end
 
+  alias_method :g, :game
+  alias_method :v, :value
+
   def change(x, y = 0)
+    return puts "位置只能是 1 ~ 9" if x < 1 or x > 10
     return puts "只能輸入一個位置，另一個位置已是 \"#{@game.index(@value)+1}\"" if @value != 0 && y != 0
     return puts "上一回合已經是 \"#{@value}\"" if @game[x-1] == @value
 
@@ -45,9 +49,10 @@ class OneNine
     end
 
     @value = sum(temp_x, temp_y)
-    # puts "y = #{@value}"
+    puts "y = #{@value}"
     @game
   end
+  alias_method :c, :change
 
   def sum(x, y)
     result = x + y
